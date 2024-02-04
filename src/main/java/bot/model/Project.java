@@ -1,6 +1,7 @@
 package bot.model;
 
 import jakarta.persistence.*;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 @Entity
 @Table(name = "projects", schema = "public")
@@ -19,12 +20,20 @@ public class Project {
     private String deadLine;
 
     @Column(name = "quantity")
-    private Integer quantity;
+    private String quantity;
 
-    @Column(name = "photo_url")
-    private String photoUrl;
+    @Column(name = "photo_id")
+    private String photoId;
 
     public Project() {
+    }
+
+    public Project(String name, String description, String deadLine, String quantity, String photoId) {
+        this.name = name;
+        this.description = description;
+        this.deadLine = deadLine;
+        this.quantity = quantity;
+        this.photoId = photoId;
     }
 
     public Integer getId() {
@@ -59,19 +68,19 @@ public class Project {
         this.deadLine = deadLine;
     }
 
-    public Integer getQuantity() {
+    public String getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Integer quantity) {
+    public void setQuantity(String quantity) {
         this.quantity = quantity;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getPhotoId() {
+        return photoId;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public void setPhotoId(String photoId) {
+        this.photoId = photoId;
     }
 }
