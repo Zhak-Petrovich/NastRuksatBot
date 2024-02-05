@@ -25,9 +25,9 @@ public class Bot extends TelegramLongPollingBot {
     private String botToken;
     private final ProjectService service;
     Map<Long, Integer> userUsage = new HashMap<>();
-    private Integer counter = 0;
+    private Integer counter;
 
-    private final Project project = new Project();
+    private Project project;
 
     @Autowired
     public Bot(ProjectService service) {
@@ -71,10 +71,10 @@ public class Bot extends TelegramLongPollingBot {
                     for (Project p : resultList) {
                         sendPhoto.setPhoto(new InputFile(p.getPhotoId()));
                         execute(sendPhoto);
-                        String result = "Название:" + p.getName() + "\n" +
+                        String result = "Название: " + p.getName() + "\n" +
                                "Описание: " + p.getDescription() + "\n" +
-                               "В наличии: " + p.getQuantity() + " шт." + "\n" +
-                               "Срок изготовления: " + p.getDeadLine() + " дней." + "\n";
+                               "В наличии: " + p.getQuantity() + "\n" +
+                               "Срок изготовления: " + p.getDeadLine() + "\n";
                         sendMessage.setText(result);
                         execute(sendMessage);
                     }
@@ -85,7 +85,7 @@ public class Bot extends TelegramLongPollingBot {
             case ("/save") -> {
                 Long user = update.getMessage().getFrom().getId();
                 System.out.println(user);
-                if ((user != 460498710L) && (user != 408906445L)) {
+                if ((user != 460498710L) && (user != 408906445L) && (user != 537308122)) {
                     sendMessage.setText("Ты не админ");
                     try {
                         execute(sendMessage);
@@ -94,8 +94,9 @@ public class Bot extends TelegramLongPollingBot {
                     }
                     break;
                 }
+                project = new Project();
                 sendMessage.setText("Напиши название");
-                userUsage.put(chatId, ++counter);
+                userUsage.put(chatId, 1);
                 try {
                     execute(sendMessage);
                 } catch (TelegramApiException e) {
@@ -109,7 +110,7 @@ public class Bot extends TelegramLongPollingBot {
                         case (1) -> {
                             project.setName(update.getMessage().getText());
                             sendMessage.setText("Напиши описание");
-                            userUsage.put(chatId, ++counter);
+                            userUsage.put(chatId, userUsage.get(chatId) + 1);
                             try {
                                 execute(sendMessage);
                             } catch (TelegramApiException e) {
@@ -119,7 +120,7 @@ public class Bot extends TelegramLongPollingBot {
                         case (2) -> {
                             project.setDescription(update.getMessage().getText());
                             sendMessage.setText("Какие сроки?");
-                            userUsage.put(chatId, ++counter);
+                            userUsage.put(chatId, userUsage.get(chatId) + 1);
                             try {
                                 execute(sendMessage);
                             } catch (TelegramApiException e) {
@@ -129,7 +130,7 @@ public class Bot extends TelegramLongPollingBot {
                         case (3) -> {
                             project.setDeadLine(update.getMessage().getText());
                             sendMessage.setText("Кол-во в наличии?");
-                            userUsage.put(chatId, ++counter);
+                            userUsage.put(chatId, userUsage.get(chatId) + 1);
                             try {
                                 execute(sendMessage);
                             } catch (TelegramApiException e) {
@@ -139,7 +140,7 @@ public class Bot extends TelegramLongPollingBot {
                         case (4) -> {
                             project.setQuantity(update.getMessage().getText());
                             sendMessage.setText("Прикрепи фото");
-                            userUsage.put(chatId, ++counter);
+                            userUsage.put(chatId, userUsage.get(chatId) + 1);
                             try {
                                 execute(sendMessage);
                             } catch (TelegramApiException e) {
@@ -147,15 +148,17 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                         case (5) -> {
-                            String photoId = update.getMessage().getPhoto().get(0).getFileId();
-                            project.setPhotoId(photoId);
-                            sendMessage.setText("Готово!");
-                            service.saveProject(project);
-                            try {
-                                execute(sendMessage);
-                                System.out.println(photoId);
-                            } catch (TelegramApiException e) {
-                                throw new RuntimeException(e);
+                            if (update.getMessage().hasPhoto()) {
+                                String photoId = update.getMessage().getPhoto().get(0).getFileId();
+                                project.setPhotoId(photoId);
+                                userUsage.put(chatId, 0);
+                                sendMessage.setText("Готово!");
+                                service.saveProject(project);
+                                try {
+                                    execute(sendMessage);
+                                } catch (TelegramApiException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         }
                     }
