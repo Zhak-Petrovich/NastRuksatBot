@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <title>Projects</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>Название</th>
+        <th>Описание</th>
+        <th>Цена</th>
+        <th>Кол-во в наличии</th>
+        <th>Сроки изготовления</th>
+        <th>Измнить?</th>
+        <th>Удалить?</th>
+    </tr>
+    <th:block th:each="project : ${projects}">
+        <tr>
+            <td>
+                <a th:text="${project.name}">tss</a>
+            </td>
+            <td th:text="${project.description}"></td>
+            <td th:text="${project.price}"></td>
+            <td th:text="${project.quantity}"></td>
+            <td th:text="${project.deadLine}"></td>
+            <td><a th:href="@{../../edit/{projectId}(projectId=${project.id})}" th:text="Edit"></a></td>
+            <td><a th:href="@{../../delete/{projectId}(projectId=${project.id})}" th:text="Delete"></a></td>
+        </tr>
+    </th:block>
+</table>
+<br>
+<br>
+<form action="/new">
+    <button>Add project</button>
+</form>
+</body>
+</html>

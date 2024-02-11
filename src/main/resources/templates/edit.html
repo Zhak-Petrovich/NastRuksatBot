@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <title>Изменение записи</title>
+</head>
+<body>
+<form th:method="POST" th:action="@{/edit/{projectId}(projectId=*{id})}" th:object="${project}">
+    <div>
+        <label for="name">Название</label>
+        <input type="text" th:field="*{name}" id="name" required placeholder="Например, Ёлочка">
+        <br>
+
+        <label for="description">Описание</label>
+        <input type="text" th:field="*{description}" id="description" required
+               placeholder="Например, изготовлена из дерева, бла, бла...">
+        <br>
+
+        <label for="price">Цена</label>
+        <input type="text" th:field="*{price}" id="price" placeholder="Например, 300 рублей">
+        <br>
+
+        <label for="quantity">Кол-во в наличии</label>
+        <input type="text" th:field="*{quantity}" id="quantity" placeholder="Например, 5 шт">
+        <br>
+
+        <label for="deadLine">Сроки изготовления</label>
+        <input type="text" th:field="*{deadLine}" id="deadLine" placeholder="Например, 3-5 дней">
+        <br>
+
+        <label for="category">Категория</label>
+        <input type="text" th:field="*{category}" id="category" placeholder="Например, декор">
+        <br>
+        <br>
+        <br>
+
+        <input type="submit" value="Изменить изделие!">
+    </div>
+</form>
+</body>
+</html>

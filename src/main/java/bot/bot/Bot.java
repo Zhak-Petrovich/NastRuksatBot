@@ -12,22 +12,33 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static bot.util.Util.isAdmin;
 
 @Component
 public class Bot extends TelegramLongPollingBot {
+    public static final String START_MESSAGE = "Привет, я Наст Рукаст!";
+    public static final String HELP_MESSAGE = """
+            /what выведет все фотки с подписями
+            /save чтобы сохранить новую запись надо быть админом""";
+    public static final String ADMIN_ERROR = "Ты не админ";
+    public static final String SAVE_MESSAGE = """
+            Прикрепи фото, затем в описании:
+            Введи название
+            Введи описание
+            Введи цену
+            Введи количество
+            Введи сроки
+            Введи категорию""";
     @Value("${bot.name}")
     private String botName;
 
     @Value("${bot.token}")
     private String botToken;
     private final ProjectService service;
-    Map<Long, Integer> userUsage = new HashMap<>();
-    private Integer counter;
-
-    private Project project;
+    private final SendMessage sendMessage = new SendMessage();
+    private final SendPhoto sendPhoto = new SendPhoto();
 
     @Autowired
     public Bot(ProjectService service) {
@@ -37,141 +48,37 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         Long chatId = update.getMessage().getChatId();
+        sendMessage.setChatId(chatId);
         String messageText = update.getMessage().getText();
         if (messageText == null) messageText = "";
-
-        SendMessage sendMessage = new SendMessage();
-        SendPhoto sendPhoto = new SendPhoto();
-        sendMessage.setChatId(chatId);
-
-
         switch (messageText) {
-            case ("/start") -> {
-                sendMessage.setText("Привет, я Наст Рукаст");
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            case ("/help") -> {
-                sendMessage.setText("/what выведет все фотки с подписями\n" +
-                        "/save предложит поэтапно сохранить");
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            case ("/start") -> sendMessage(START_MESSAGE, sendMessage);
+            case ("/help") -> sendMessage(HELP_MESSAGE, sendMessage);
             case ("/what") -> {
-                sendMessage.setChatId(chatId);
                 sendPhoto.setChatId(chatId);
                 List<Project> resultList = service.getAll();
-                try {
-                    for (Project p : resultList) {
-                        sendPhoto.setPhoto(new InputFile(p.getPhotoId()));
-                        execute(sendPhoto);
-                        String result = "Название: " + p.getName() + "\n" +
-                               "Описание: " + p.getDescription() + "\n" +
-                               "В наличии: " + p.getQuantity() + "\n" +
-                               "Срок изготовления: " + p.getDeadLine() + "\n";
-                        sendMessage.setText(result);
-                        execute(sendMessage);
-                    }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-            case ("/save") -> {
-                Long user = update.getMessage().getFrom().getId();
-                System.out.println(user);
-                if ((user != 460498710L) && (user != 408906445L) && (user != 537308122)) {
-                    sendMessage.setText("Ты не админ");
-                    try {
-                        execute(sendMessage);
-                    } catch (TelegramApiException e) {
-                        throw new RuntimeException(e);
-                    }
-                    break;
-                }
-                project = new Project();
-                sendMessage.setText("Напиши название");
-                userUsage.put(chatId, 1);
-                try {
-                    execute(sendMessage);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
+                for (Project p : resultList) {
+                    sendPhoto.setCaption(p.toString());
+                    sendPhoto(p.getPhotoId(), sendPhoto);
                 }
 
             }
-            default -> {
-                if (userUsage.get(chatId) > 0 && userUsage.get(chatId) < 6) {
-                    switch (userUsage.get(chatId)) {
-                        case (1) -> {
-                            project.setName(update.getMessage().getText());
-                            sendMessage.setText("Напиши описание");
-                            userUsage.put(chatId, userUsage.get(chatId) + 1);
-                            try {
-                                execute(sendMessage);
-                            } catch (TelegramApiException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        case (2) -> {
-                            project.setDescription(update.getMessage().getText());
-                            sendMessage.setText("Какие сроки?");
-                            userUsage.put(chatId, userUsage.get(chatId) + 1);
-                            try {
-                                execute(sendMessage);
-                            } catch (TelegramApiException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        case (3) -> {
-                            project.setDeadLine(update.getMessage().getText());
-                            sendMessage.setText("Кол-во в наличии?");
-                            userUsage.put(chatId, userUsage.get(chatId) + 1);
-                            try {
-                                execute(sendMessage);
-                            } catch (TelegramApiException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        case (4) -> {
-                            project.setQuantity(update.getMessage().getText());
-                            sendMessage.setText("Прикрепи фото");
-                            userUsage.put(chatId, userUsage.get(chatId) + 1);
-                            try {
-                                execute(sendMessage);
-                            } catch (TelegramApiException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                        case (5) -> {
-                            if (update.getMessage().hasPhoto()) {
-                                String photoId = update.getMessage().getPhoto().get(0).getFileId();
-                                project.setPhotoId(photoId);
-                                userUsage.put(chatId, 0);
-                                sendMessage.setText("Готово!");
-                                service.saveProject(project);
-                                try {
-                                    execute(sendMessage);
-                                } catch (TelegramApiException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            case ("/save") -> sendMessage(SAVE_MESSAGE, sendMessage);
+
         }
-
-
+        if (update.getMessage().hasPhoto()) {
+            sendMessage(saveNewProject(update), sendMessage);
+        }
     }
+
 
     @Override
     public void clearWebhook() {
+    }
 
+    @Override
+    public String getBotToken() {
+        return this.botToken;
     }
 
     @Override
@@ -179,8 +86,45 @@ public class Bot extends TelegramLongPollingBot {
         return this.botName;
     }
 
-    @Override
-    public String getBotToken() {
-        return this.botToken;
+    private void sendMessage(String text, SendMessage sendMessage) {
+        sendMessage.setText(text);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void sendPhoto(String photoId, SendPhoto sendPhoto) {
+        sendPhoto.setPhoto(new InputFile(photoId));
+        try {
+            execute(sendPhoto);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String saveNewProject(Update update) {
+        long user = update.getMessage().getFrom().getId();
+        if (!isAdmin(user)) {
+            return ADMIN_ERROR;
+        }
+        if (update.getMessage().getCaption() != null) {
+            Project project = new Project();
+            String[] newProject = update.getMessage().getCaption().split("\n");
+            if (newProject.length != 6) {
+                return "Ошибка в описании";
+            }
+            project.setName(newProject[0]);
+            project.setDescription(newProject[1]);
+            project.setPrice(newProject[2]);
+            project.setQuantity(newProject[3]);
+            project.setDeadLine(newProject[4]);
+            project.setCategory(newProject[5]);
+            project.setPhotoId(update.getMessage().getPhoto().get(0).getFileId());
+            service.saveProject(project);
+            return "Success";
+        }
+        return "Something was wrong";
     }
 }

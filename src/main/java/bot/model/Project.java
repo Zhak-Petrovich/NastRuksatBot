@@ -1,7 +1,8 @@
 package bot.model;
 
 import jakarta.persistence.*;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 @Entity
 @Table(name = "projects", schema = "public")
@@ -11,37 +12,39 @@ public class Project {
     private Integer id;
 
     @Column(name = "name")
+    @Pattern(regexp = "[а-яА-ЯЁё .]*")
     private String name;
 
     @Column(name = "description")
+    @Pattern(regexp = "[а-яА-ЯЁё .]*")
     private String description;
 
     @Column(name = "deadline")
+    @Pattern(regexp = "[0-9а-яА-ЯЁё .-]*")
     private String deadLine;
 
     @Column(name = "quantity")
+    @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
     private String quantity;
 
     @Column(name = "photo_id")
+    @NotNull
     private String photoId;
+    @Column(name = "path")
+    private String photoPath;
+    @Column(name = "price")
+    @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
+    private String price;
+
+    @Column(name = "category")
+    @Pattern(regexp = "[0-9а-яА-ЯЁё .]\\S+")
+    private String category;
 
     public Project() {
     }
 
-    public Project(String name, String description, String deadLine, String quantity, String photoId) {
-        this.name = name;
-        this.description = description;
-        this.deadLine = deadLine;
-        this.quantity = quantity;
-        this.photoId = photoId;
-    }
-
     public Integer getId() {
         return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
     }
 
     public String getName() {
@@ -82,5 +85,38 @@ public class Project {
 
     public void setPhotoId(String photoId) {
         this.photoId = photoId;
+    }
+
+    public String getPhotoPath() {
+        return photoPath;
+    }
+
+    public void setPhotoPath(String photoPath) {
+        this.photoPath = photoPath;
+    }
+
+    public String getPrice() {
+        return price;
+    }
+
+    public void setPrice(String price) {
+        this.price = price;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    @Override
+    public String toString() {
+        return "Название: " + this.getName() + "\n" +
+                "Описание: " + this.getDescription() + "\n" +
+                "Цена: " + this.price  +"\n"+
+                "В наличии: " + this.getQuantity() + "\n" +
+                "Срок изготовления: " + this.getDeadLine() + "\n";
     }
 }
