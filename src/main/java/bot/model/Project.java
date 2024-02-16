@@ -12,11 +12,11 @@ public class Project {
     private Integer id;
 
     @Column(name = "name")
-    @Pattern(regexp = "[а-яА-ЯЁё .]*")
+    @Pattern(regexp = "[а-яА-ЯЁё .-]*")
     private String name;
 
     @Column(name = "description")
-    @Pattern(regexp = "[а-яА-ЯЁё .]*")
+    @Pattern(regexp = "[а-яА-ЯЁё .-]*")
     private String description;
 
     @Column(name = "deadline")

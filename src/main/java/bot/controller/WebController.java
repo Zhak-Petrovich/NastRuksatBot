@@ -1,6 +1,8 @@
 package bot.controller;
 
+import bot.model.Category;
 import bot.model.Project;
+import bot.service.CategoryService;
 import bot.service.ProjectService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -9,15 +11,18 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class WebController {
-    private final ProjectService service;
+    private final ProjectService projectService;
+    private final CategoryService categoryService;
 
-    public WebController(ProjectService service) {
-        this.service = service;
+    public WebController(ProjectService projectService, CategoryService categoryService) {
+        this.projectService = projectService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("")
     public String getAllProjects(ModelMap modelMap) {
-        modelMap.addAttribute("projects", service.getAll());
+        modelMap.addAttribute("projects", projectService.getAll());
+        modelMap.addAttribute("category", categoryService.getCategoryById(1));
         return "index";
     }
 
@@ -29,7 +34,7 @@ public class WebController {
 
     @PostMapping("")
     public String saveProject(@ModelAttribute("project") Project project) {
-        service.saveProject(project);
+        projectService.saveProject(project);
         return "redirect:/";
     }
 
@@ -37,32 +42,44 @@ public class WebController {
     public String editProject(@PathVariable("id") Integer id,
                               Model model) {
 
-        model.addAttribute("project", service.getProjectById(id));
+        model.addAttribute("project", projectService.getProjectById(id));
         return "edit";
     }
 
     @PostMapping("/edit/{id}")
     public String updateProject(@ModelAttribute("project") Project project,
                                 @PathVariable("id") Integer id) {
-        service.updateProject(project, id);
+        projectService.updateProject(project, id);
         return "redirect:/";
     }
 
     @GetMapping("/delete/{id}")
     public String confirmProjectDeleting(@PathVariable("id") Integer id, ModelMap modelMap) {
-        modelMap.addAttribute("project", service.getProjectById(id));
+        modelMap.addAttribute("project", projectService.getProjectById(id));
         return "delete";
     }
 
     @GetMapping("/delete")
     public String deleteProjectById(@ModelAttribute("id") Integer id) {
-        service.deleteProject(id);
+        projectService.deleteProject(id);
         return "redirect:/";
     }
     @GetMapping("/show/{id}")
     public String getProjectById(@PathVariable("id") Integer id,
                                  Model model) {
-        model.addAttribute("project", service.getProjectById(id));
+        model.addAttribute("project", projectService.getProjectById(id));
         return "index";
+    }
+
+    @GetMapping("/editCategory")
+    public String editSeasonCategory(Model model) {
+        model.addAttribute("category", categoryService.getCategoryById(1));
+        return "editCategory";
+    }
+
+    @PostMapping("/editCategory")
+    public String updateSeasonCategory(Category category) {
+        categoryService.updateCategory(category, 1);
+        return "redirect:/";
     }
 }

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <title>Изменение сезонной категории</title>
+</head>
+<body>
+<form th:method="POST" th:action="@{/editCategory}" th:object="${category}">
+
+    <label for="name">Название</label>
+    <input type="text" th:field="*{name}" id="name" required placeholder="Например, рождество">
+    <input type="submit" value="Изменить категорию!">
+</form>
+</body>
+</html>

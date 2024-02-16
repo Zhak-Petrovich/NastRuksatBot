@@ -13,6 +13,7 @@
         <th>Цена</th>
         <th>Кол-во в наличии</th>
         <th>Сроки изготовления</th>
+        <th>Категория</th>
         <th>Измнить?</th>
         <th>Удалить?</th>
     </tr>
@@ -25,12 +26,21 @@
             <td th:text="${project.price}"></td>
             <td th:text="${project.quantity}"></td>
             <td th:text="${project.deadLine}"></td>
+            <td th:text="${project.category}"></td>
             <td><a th:href="@{../../edit/{projectId}(projectId=${project.id})}" th:text="Edit"></a></td>
             <td><a th:href="@{../../delete/{projectId}(projectId=${project.id})}" th:text="Delete"></a></td>
         </tr>
     </th:block>
 </table>
 <br>
+<table>
+    <tr>
+        <th>Название сезонной категории</th>
+        <th>Изменить?</th>
+    </tr>
+    <td th:text="${category.name}"></td>
+    <td><a th:href="@{/../../editCategory}" th:text="Edit"></a></td>
+</table>
 <br>
 <form action="/new">
     <button>Add project</button>

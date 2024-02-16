@@ -1,10 +1,17 @@
 package bot.util;
 
+import bot.model.Category;
 import bot.model.Project;
+import bot.service.CategoryService;
+
+import java.util.List;
 
 public class Util {
     public static Boolean isAdmin(Long id) {
-        return id == 460498710 || id == 408906445 || id == 537308122;
+        System.out.println(id);
+        return id == 460498710 //Me
+                || id == 408906445 // Nast
+                || id == 537308122; // Anton
     }
 
     public static void prepareToUpdate(Project project, Project projectToUpdate) {
@@ -27,4 +34,11 @@ public class Util {
             projectToUpdate.setCategory(project.getCategory());
         }
     }
+
+    public static List<Project> getFilteredProjects(List<Project> projects, String filter) {
+        return projects.stream()
+                .filter(project -> project.getCategory().equalsIgnoreCase(filter))
+                .toList();
+    }
+
 }
