@@ -7,7 +7,7 @@
 </head>
 <body>
 <h2>Добавление изделия</h2>
-<form th:method="POST" th:action="@{/}" th:object="${project}">
+<form th:method="POST" th:action="@{/}" th:object="${project}" enctype="multipart/form-data">
     <div>
         <label for="name">Название</label>
         <input type="text" th:field="*{name}" id="name" required placeholder="Например, Ёлочка">
@@ -32,6 +32,11 @@
 
         <label for="category">Категория</label>
         <input type="text" th:field="*{category}" id="category" placeholder="Например, декор">
+        <br>
+        <br>
+
+        <label for="file">Фото</label>
+        <input type="file" name="file" id="file">
         <br>
         <br>
         <br>

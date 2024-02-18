@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.*;
@@ -16,15 +17,13 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.List;
+import java.util.UUID;
 
 import static bot.util.Util.isAdmin;
 
 @Component
 public class Bot extends TelegramLongPollingBot {
     public static final String START_MESSAGE = "Привет, я Наст Рукаст!";
-    public static final String HELP_MESSAGE = """
-            /what выведет все фотки с подписями
-            /save чтобы сохранить новую запись надо быть админом""";
     public static final String ADMIN_ERROR = "Ты не админ";
     public static final String SAVE_MESSAGE = """
             Прикрепи фото, затем в описании:
@@ -40,14 +39,22 @@ public class Bot extends TelegramLongPollingBot {
 
     @Value("${bot.token}")
     private String botToken;
-    private final ProjectService projectService;
-    private final CategoryService categoryService;
+    private ProjectService projectService;
+    private CategoryService categoryService;
     private final SendMessage sendMessage = new SendMessage();
     private final SendPhoto sendPhoto = new SendPhoto();
+    private Boolean isIndividual = false;
+
+    public Bot() {
+    }
 
     @Autowired
-    public Bot(ProjectService projectService, CategoryService categoryService) {
+    public void setProjectService(ProjectService projectService) {
         this.projectService = projectService;
+    }
+
+    @Autowired
+    public void setCategoryService(CategoryService categoryService) {
         this.categoryService = categoryService;
     }
 
@@ -61,15 +68,15 @@ public class Bot extends TelegramLongPollingBot {
                 String messageText = update.getMessage().getText();
                 switch (messageText) {
                     case ("/start") -> {
+                        isIndividual = false;
                         keyboardMarkup = Keyboard.startKeyboard();
                         sendMessage.setReplyMarkup(keyboardMarkup);
                         sendMessage(START_MESSAGE, sendMessage);
                     }
-                    case ("/help") -> sendMessage(HELP_MESSAGE, sendMessage);
                     case ("/save") -> sendMessage(SAVE_MESSAGE, sendMessage);
                     case ("/order") -> {
                         Long chat = update.getMessage().getChatId();
-                        sendMessage.setChatId(460498710L);
+                        sendMessage.setChatId(537308122L);
                         sendMessage.setReplyMarkup(null);
                         sendMessage("@" + update.getMessage().getFrom().getUserName() + " хочет что-то заказать", sendMessage);
                         sendMessage.setChatId(chat);
@@ -78,7 +85,11 @@ public class Bot extends TelegramLongPollingBot {
                 }
             }
             if (update.getMessage().hasPhoto()) {
-                sendMessage(saveNewProject(update), sendMessage);
+                try {
+                    sendMessage(saveNewProject(update), sendMessage);
+                } catch (TelegramApiException e) {
+                    throw new RuntimeException(e);
+                }
             }
         } else if (update.hasCallbackQuery()) {
             Long chatId = update.getCallbackQuery().getMessage().getChatId();
@@ -86,13 +97,14 @@ public class Bot extends TelegramLongPollingBot {
             sendMessage.setChatId(chatId);
             switch (update.getCallbackQuery().getData()) {
                 case ("/start") -> {
+                    isIndividual = false;
                     keyboardMarkup = Keyboard.startKeyboard();
                     sendMessage.setReplyMarkup(keyboardMarkup);
                     sendMessage(START_MESSAGE, sendMessage);
                 }
                 case ("/category") -> {
-                    keyboardMarkup = Keyboard.categoriesKeyboard(categoryService.getCategoryById(1));
-                    sendMessage.setReplyMarkup(keyboardMarkup);
+                    isIndividual = false;
+                    sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
                     sendMessage("Выберите категорию:", sendMessage);
                 }
                 case ("/about") -> sendMessage("blah-blah-blah", sendMessage);
@@ -105,9 +117,14 @@ public class Bot extends TelegramLongPollingBot {
                 case ("/other") -> sendFilteredPhoto(projectService.getAll(), "другое");
                 case ("/season") ->
                         sendFilteredPhoto(projectService.getAll(), categoryService.getCategoryById(1).getName());
+                case ("/individual") -> {
+                    isIndividual = true;
+                    sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
+                    sendMessage("Выберите категорию:", sendMessage);
+                }
                 case ("/order") -> {
                     Long chat = update.getCallbackQuery().getMessage().getChatId();
-                    sendMessage.setChatId(408906445L);
+                    sendMessage.setChatId(537308122L);
                     sendMessage.setReplyMarkup(null);
                     sendMessage("@" + update.getCallbackQuery().getFrom().getUserName() + " хочет что-то заказать", sendMessage);
                     sendMessage.setChatId(chat);
@@ -141,7 +158,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendPhoto(String photoId, SendPhoto sendPhoto) {
+    public void sendPhotoById(String photoId, SendPhoto sendPhoto) {
         sendPhoto.setPhoto(new InputFile(photoId));
         try {
             execute(sendPhoto);
@@ -150,7 +167,16 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public String saveNewProject(Update update) {
+    public void sendPhotoByPath(String photoPath, SendPhoto sendPhoto) {
+        sendPhoto.setPhoto(new InputFile(new java.io.File(photoPath)));
+        try {
+            execute(sendPhoto);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String saveNewProject(Update update) throws TelegramApiException {
         long user = update.getMessage().getFrom().getId();
         if (!isAdmin(user)) {
             return ADMIN_ERROR;
@@ -161,6 +187,8 @@ public class Bot extends TelegramLongPollingBot {
             if (newProject.length != 6) {
                 return "Ошибка в описании";
             }
+            String photoPath = "/home/data/" + UUID.randomUUID() + ".jpg";
+            //String photoPath = "E:\\data\\" + UUID.randomUUID() + ".jpg";
             project.setName(newProject[0]);
             project.setDescription(newProject[1]);
             project.setPrice(newProject[2]);
@@ -168,6 +196,8 @@ public class Bot extends TelegramLongPollingBot {
             project.setDeadLine(newProject[4]);
             project.setCategory(newProject[5]);
             project.setPhotoId(update.getMessage().getPhoto().get(0).getFileId());
+            project.setPhotoPath(photoPath);
+            getFile(update, photoPath);
             projectService.saveProject(project);
             return "Запись \"" + newProject[0] + "\" успешно сохранена!";
         }
@@ -175,13 +205,22 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     private void sendFilteredPhoto(List<Project> projects, String filter) {
-        List<Project> resultList = Util.getFilteredProjects(projects, filter);
+        List<Project> resultList = Util.getFilteredProjects(projects, filter, isIndividual);
         for (Project p : resultList) {
             sendPhoto.setCaption(p.toString());
-            sendPhoto(p.getPhotoId(), sendPhoto);
+            if (p.getPhotoId() != null) {
+                sendPhotoById(p.getPhotoId(), sendPhoto);
+            } else {
+                sendPhotoByPath(p.getPhotoPath(), sendPhoto);
+            }
         }
         sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
         sendMessage("Выберите категорию:", sendMessage);
+    }
 
+    private void getFile(Update update, String photoPath) throws TelegramApiException {
+        GetFile getFile = new GetFile(update.getMessage().getPhoto().get(0).getFileId());
+        File file = execute(getFile);
+        downloadFile(file, new java.io.File(photoPath));
     }
 }

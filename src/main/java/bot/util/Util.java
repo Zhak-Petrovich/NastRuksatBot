@@ -1,9 +1,5 @@
 package bot.util;
-
-import bot.model.Category;
 import bot.model.Project;
-import bot.service.CategoryService;
-
 import java.util.List;
 
 public class Util {
@@ -35,9 +31,16 @@ public class Util {
         }
     }
 
-    public static List<Project> getFilteredProjects(List<Project> projects, String filter) {
+    public static List<Project> getFilteredProjects(List<Project> projects, String filter, Boolean isIndividual) {
+        if (isIndividual) {
+            return projects.stream()
+                    .filter(project -> project.getCategory().equalsIgnoreCase(filter))
+                    .filter(project -> project.getQuantity().equals("0"))
+                    .toList();
+        }
         return projects.stream()
                 .filter(project -> project.getCategory().equalsIgnoreCase(filter))
+                .filter(project -> !project.getQuantity().equals("0"))
                 .toList();
     }
 

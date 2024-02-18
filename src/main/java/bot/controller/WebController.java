@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class WebController {
@@ -33,8 +34,10 @@ public class WebController {
     }
 
     @PostMapping("")
-    public String saveProject(@ModelAttribute("project") Project project) {
-        projectService.saveProject(project);
+    public String saveProject(@ModelAttribute("project") Project project,
+                          @RequestParam("file") MultipartFile file) {
+
+        projectService.saveProject(project, file);
         return "redirect:/";
     }
 

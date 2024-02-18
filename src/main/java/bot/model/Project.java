@@ -1,7 +1,6 @@
 package bot.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 @Entity
@@ -28,7 +27,6 @@ public class Project {
     private String quantity;
 
     @Column(name = "photo_id")
-    @NotNull
     private String photoId;
     @Column(name = "path")
     private String photoPath;

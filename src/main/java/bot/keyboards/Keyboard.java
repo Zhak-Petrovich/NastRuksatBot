@@ -46,20 +46,10 @@ public class Keyboard {
 
         List<InlineKeyboardButton> row2 = new ArrayList<>();
         row2.add(InlineKeyboardButton.builder().text("В наличии...").callbackData("/category").build());
+        row2.add(InlineKeyboardButton.builder().text("Под заказ").callbackData("/individual").build());
 
         keyboard.add(row1);
         keyboard.add(row2);
-        keyboardMarkup.setKeyboard(keyboard);
-        return keyboardMarkup;
-    }
-
-    public static InlineKeyboardMarkup toMainMenu() {
-        InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        row.add(InlineKeyboardButton.builder().text("Назад").callbackData("/start").build());
-        keyboard.add(row);
         keyboardMarkup.setKeyboard(keyboard);
         return keyboardMarkup;
     }

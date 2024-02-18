@@ -6,8 +6,10 @@
     <title>Изменение записи</title>
 </head>
 <body>
+
 <form th:method="POST" th:action="@{/edit/{projectId}(projectId=*{id})}" th:object="${project}">
     <div>
+        <br>
         <label for="name">Название</label>
         <input type="text" th:field="*{name}" id="name" required placeholder="Например, Ёлочка">
         <br>
