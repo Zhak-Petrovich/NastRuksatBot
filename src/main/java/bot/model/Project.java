@@ -1,6 +1,7 @@
 package bot.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 @Entity
@@ -26,10 +27,10 @@ public class Project {
     @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
     private String quantity;
 
-    @Column(name = "photo_id")
-    private String photoId;
     @Column(name = "path")
+    @NotNull
     private String photoPath;
+
     @Column(name = "price")
     @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
     private String price;
@@ -75,14 +76,6 @@ public class Project {
 
     public void setQuantity(String quantity) {
         this.quantity = quantity;
-    }
-
-    public String getPhotoId() {
-        return photoId;
-    }
-
-    public void setPhotoId(String photoId) {
-        this.photoId = photoId;
     }
 
     public String getPhotoPath() {

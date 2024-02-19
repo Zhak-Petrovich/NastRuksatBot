@@ -158,15 +158,6 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void sendPhotoById(String photoId, SendPhoto sendPhoto) {
-        sendPhoto.setPhoto(new InputFile(photoId));
-        try {
-            execute(sendPhoto);
-        } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void sendPhotoByPath(String photoPath, SendPhoto sendPhoto) {
         sendPhoto.setPhoto(new InputFile(new java.io.File(photoPath)));
         try {
@@ -195,7 +186,6 @@ public class Bot extends TelegramLongPollingBot {
             project.setQuantity(newProject[3]);
             project.setDeadLine(newProject[4]);
             project.setCategory(newProject[5]);
-            project.setPhotoId(update.getMessage().getPhoto().get(0).getFileId());
             project.setPhotoPath(photoPath);
             getFile(update, photoPath);
             projectService.saveProject(project);
@@ -208,18 +198,14 @@ public class Bot extends TelegramLongPollingBot {
         List<Project> resultList = Util.getFilteredProjects(projects, filter, isIndividual);
         for (Project p : resultList) {
             sendPhoto.setCaption(p.toString());
-            if (p.getPhotoId() != null) {
-                sendPhotoById(p.getPhotoId(), sendPhoto);
-            } else {
-                sendPhotoByPath(p.getPhotoPath(), sendPhoto);
-            }
+            sendPhotoByPath(p.getPhotoPath(), sendPhoto);
         }
         sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
         sendMessage("Выберите категорию:", sendMessage);
     }
 
     private void getFile(Update update, String photoPath) throws TelegramApiException {
-        GetFile getFile = new GetFile(update.getMessage().getPhoto().get(0).getFileId());
+        GetFile getFile = new GetFile(update.getMessage().getPhoto().get(3).getFileId());
         File file = execute(getFile);
         downloadFile(file, new java.io.File(photoPath));
     }
