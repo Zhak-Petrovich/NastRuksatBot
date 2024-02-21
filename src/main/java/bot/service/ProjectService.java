@@ -11,6 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,12 +35,13 @@ public class ProjectService {
         if (!file.isEmpty()) {
             try {
                 byte[] bytes = file.getBytes();
-                String path = "/home/data/" + UUID.randomUUID() + ".jpg";
-                //String path = "E:\\data\\" + UUID.randomUUID() + ".jpg";
-                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(path));
+                String fileName = UUID.randomUUID() + ".jpg";
+                String savePath = "/home/data/" + fileName;
+                //String savePath = "E:\\data\\" + fileName;
+                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(savePath));
                 outputStream.write(bytes);
                 outputStream.close();
-                project.setPhotoPath(path);
+                project.setFileName(fileName);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -61,7 +64,8 @@ public class ProjectService {
         repository.save(projectToUpdate);
     }
     @Transactional
-    public void deleteProject(Integer id) {
+    public void deleteProject(Integer id) throws IOException {
+        Files.delete(Path.of("/home/data/" + repository.getReferenceById(id).getFileName()));
         repository.deleteById(id);
     }
 }

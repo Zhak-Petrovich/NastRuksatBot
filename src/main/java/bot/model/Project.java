@@ -16,7 +16,7 @@ public class Project {
     private String name;
 
     @Column(name = "description")
-    @Pattern(regexp = "[а-яА-ЯЁё .-]*")
+    @Pattern(regexp = "[а-яА-ЯЁё .,-]*")
     private String description;
 
     @Column(name = "deadline")
@@ -27,16 +27,16 @@ public class Project {
     @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
     private String quantity;
 
-    @Column(name = "path")
+    @Column(name = "file_name")
     @NotNull
-    private String photoPath;
+    private String fileName;
 
     @Column(name = "price")
     @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
     private String price;
 
     @Column(name = "category")
-    @Pattern(regexp = "[0-9а-яА-ЯЁё .]\\S+")
+    @Pattern(regexp = "[0-9а-яА-ЯЁё .]*")
     private String category;
 
     public Project() {
@@ -78,12 +78,12 @@ public class Project {
         this.quantity = quantity;
     }
 
-    public String getPhotoPath() {
-        return photoPath;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setPhotoPath(String photoPath) {
-        this.photoPath = photoPath;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
     public String getPrice() {

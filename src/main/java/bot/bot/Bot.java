@@ -124,7 +124,7 @@ public class Bot extends TelegramLongPollingBot {
                 }
                 case ("/order") -> {
                     Long chat = update.getCallbackQuery().getMessage().getChatId();
-                    sendMessage.setChatId(537308122L);
+                    sendMessage.setChatId(460498710L);
                     sendMessage.setReplyMarkup(null);
                     sendMessage("@" + update.getCallbackQuery().getFrom().getUserName() + " хочет что-то заказать", sendMessage);
                     sendMessage.setChatId(chat);
@@ -178,16 +178,17 @@ public class Bot extends TelegramLongPollingBot {
             if (newProject.length != 6) {
                 return "Ошибка в описании";
             }
-            String photoPath = "/home/data/" + UUID.randomUUID() + ".jpg";
-            //String photoPath = "E:\\data\\" + UUID.randomUUID() + ".jpg";
+            String fileName = UUID.randomUUID() + ".jpg";
+            String savePath = "/home/data/" + fileName;
+            //String savePath = "E:\\data\\" + fileName;
             project.setName(newProject[0]);
             project.setDescription(newProject[1]);
             project.setPrice(newProject[2]);
             project.setQuantity(newProject[3]);
             project.setDeadLine(newProject[4]);
             project.setCategory(newProject[5]);
-            project.setPhotoPath(photoPath);
-            getFile(update, photoPath);
+            project.setFileName(fileName);
+            getFile(update, savePath);
             projectService.saveProject(project);
             return "Запись \"" + newProject[0] + "\" успешно сохранена!";
         }
@@ -198,15 +199,16 @@ public class Bot extends TelegramLongPollingBot {
         List<Project> resultList = Util.getFilteredProjects(projects, filter, isIndividual);
         for (Project p : resultList) {
             sendPhoto.setCaption(p.toString());
-            sendPhotoByPath(p.getPhotoPath(), sendPhoto);
+            sendPhotoByPath("/home/data/" + p.getFileName(), sendPhoto);
+            //sendPhotoByPath("E:\\data\\" + p.getFileName(), sendPhoto);
         }
         sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
         sendMessage("Выберите категорию:", sendMessage);
     }
 
-    private void getFile(Update update, String photoPath) throws TelegramApiException {
+    private void getFile(Update update, String savePath) throws TelegramApiException {
         GetFile getFile = new GetFile(update.getMessage().getPhoto().get(3).getFileId());
         File file = execute(getFile);
-        downloadFile(file, new java.io.File(photoPath));
+        downloadFile(file, new java.io.File(savePath));
     }
 }

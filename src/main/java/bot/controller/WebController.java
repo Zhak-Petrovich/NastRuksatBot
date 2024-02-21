@@ -10,6 +10,8 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @Controller
 public class WebController {
     private final ProjectService projectService;
@@ -63,7 +65,7 @@ public class WebController {
     }
 
     @GetMapping("/delete")
-    public String deleteProjectById(@ModelAttribute("id") Integer id) {
+    public String deleteProjectById(@ModelAttribute("id") Integer id) throws IOException {
         projectService.deleteProject(id);
         return "redirect:/";
     }

@@ -35,12 +35,12 @@ public class Util {
         if (isIndividual) {
             return projects.stream()
                     .filter(project -> project.getCategory().equalsIgnoreCase(filter))
-                    .filter(project -> project.getQuantity().equals("0"))
+                    .filter(project -> project.getQuantity().equals("0") || project.getQuantity().isBlank())
                     .toList();
         }
         return projects.stream()
                 .filter(project -> project.getCategory().equalsIgnoreCase(filter))
-                .filter(project -> !project.getQuantity().equals("0"))
+                .filter(project -> !project.getQuantity().equals("0") && !project.getQuantity().isBlank())
                 .toList();
     }
 
