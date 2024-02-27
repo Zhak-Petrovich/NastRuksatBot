@@ -38,8 +38,18 @@
         <th>Название сезонной категории</th>
         <th>Изменить?</th>
     </tr>
-    <td th:text="${category.name}"></td>
+    <td th:text="${category.value}"></td>
     <td><a th:href="@{/../../editCategory}" th:text="Edit"></a></td>
+</table>
+<br>
+<br>
+<table>
+    <tr>
+        <th>Текст "Обо мне"</th>
+        <th>Изменить?</th>
+    </tr>
+    <td th:text="${about.value}"></td>
+    <td><a th:href="@{/../../editAbout}" th:text="Edit"></a></td>
 </table>
 <br>
 <br>

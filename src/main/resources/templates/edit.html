@@ -9,7 +9,7 @@
 
 <form th:method="POST" th:action="@{/edit/{projectId}(projectId=*{id})}" th:object="${project}">
     <div>
-<!--        <img th:src="*{'http://127.0.0.1:8080/img/' + fileName}" th:alt="*{name}" width="300px">-->
+        <img th:src="*{'/img/'+ fileName}" th:alt="*{name}" width="300px">
         <br>
         <label for="name">Название</label>
         <input type="text" th:field="*{name}" id="name" required placeholder="Например, Ёлочка">

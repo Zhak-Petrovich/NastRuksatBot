@@ -1,8 +1,8 @@
 package bot.controller;
 
-import bot.model.Category;
+import bot.model.Support;
 import bot.model.Project;
-import bot.service.CategoryService;
+import bot.service.SupService;
 import bot.service.ProjectService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,17 +15,18 @@ import java.io.IOException;
 @Controller
 public class WebController {
     private final ProjectService projectService;
-    private final CategoryService categoryService;
+    private final SupService supService;
 
-    public WebController(ProjectService projectService, CategoryService categoryService) {
+    public WebController(ProjectService projectService, SupService supService) {
         this.projectService = projectService;
-        this.categoryService = categoryService;
+        this.supService = supService;
     }
 
     @GetMapping("")
     public String getAllProjects(ModelMap modelMap) {
         modelMap.addAttribute("projects", projectService.getAll());
-        modelMap.addAttribute("category", categoryService.getCategoryById(1));
+        modelMap.addAttribute("category", supService.getSupportById(1));
+        modelMap.addAttribute("about", supService.getSupportById(2));
         return "index";
     }
 
@@ -78,13 +79,25 @@ public class WebController {
 
     @GetMapping("/editCategory")
     public String editSeasonCategory(Model model) {
-        model.addAttribute("category", categoryService.getCategoryById(1));
+        model.addAttribute("category", supService.getSupportById(1));
         return "editCategory";
     }
 
     @PostMapping("/editCategory")
-    public String updateSeasonCategory(Category category) {
-        categoryService.updateCategory(category, 1);
+    public String updateSeasonCategory(Support category) {
+        supService.updateValue(category, 1);
+        return "redirect:/";
+    }
+
+    @GetMapping("/editAbout")
+    public String editAbout(Model model) {
+        model.addAttribute("about", supService.getSupportById(2));
+        return "editAbout";
+    }
+
+    @PostMapping("/editAbout")
+    public String updateAbout(Support about) {
+        supService.updateValue(about, 2);
         return "redirect:/";
     }
 }

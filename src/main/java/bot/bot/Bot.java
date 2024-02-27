@@ -1,7 +1,7 @@
 package bot.bot;
 
 import bot.keyboards.Keyboard;
-import bot.service.CategoryService;
+import bot.service.SupService;
 import bot.service.ProjectService;
 import bot.model.Project;
 import bot.util.Util;
@@ -23,6 +23,10 @@ import static bot.util.Util.isAdmin;
 
 @Component
 public class Bot extends TelegramLongPollingBot {
+
+    public static final String PART_OF_PATH = "/home/data/";
+    //public static final String PART_OF_PATH = "E:\\data\\";
+    public static final Long ADMIN_ID = 460498710L; //408906445 Nast, 537308122 Anton, 460498710 Me
     public static final String START_MESSAGE = "Привет, я Наст Рукаст!";
     public static final String ADMIN_ERROR = "Ты не админ";
     public static final String SAVE_MESSAGE = """
@@ -36,16 +40,15 @@ public class Bot extends TelegramLongPollingBot {
     public static final String ORDER_MESSAGE = "Спасибо за проявленный интерес, с вами скоро свяжутся))";
     @Value("${bot.name}")
     private String botName;
-
-    @Value("${bot.token}")
-    private String botToken;
     private ProjectService projectService;
-    private CategoryService categoryService;
+    private SupService supService;
     private final SendMessage sendMessage = new SendMessage();
     private final SendPhoto sendPhoto = new SendPhoto();
     private Boolean isIndividual = false;
 
-    public Bot() {
+    @Autowired
+    public Bot(@Value("${bot.token}") String botToken) {
+        super(botToken);
     }
 
     @Autowired
@@ -54,8 +57,8 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     @Autowired
-    public void setCategoryService(CategoryService categoryService) {
-        this.categoryService = categoryService;
+    public void setSupService(SupService supService) {
+        this.supService = supService;
     }
 
     @Override
@@ -76,7 +79,7 @@ public class Bot extends TelegramLongPollingBot {
                     case ("/save") -> sendMessage(SAVE_MESSAGE, sendMessage);
                     case ("/order") -> {
                         Long chat = update.getMessage().getChatId();
-                        sendMessage.setChatId(537308122L);
+                        sendMessage.setChatId(ADMIN_ID);
                         sendMessage.setReplyMarkup(null);
                         sendMessage("@" + update.getMessage().getFrom().getUserName() + " хочет что-то заказать", sendMessage);
                         sendMessage.setChatId(chat);
@@ -104,11 +107,10 @@ public class Bot extends TelegramLongPollingBot {
                 }
                 case ("/category") -> {
                     isIndividual = false;
-                    sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
+                    sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(supService.getSupportById(1)));
                     sendMessage("Выберите категорию:", sendMessage);
                 }
-                case ("/about") -> sendMessage("blah-blah-blah", sendMessage);
-                case ("/callme") -> sendMessage("call me!", sendMessage);
+                case ("/about") -> sendMessage(supService.getSupportById(2).getValue(), sendMessage);
                 case ("/boards") -> sendFilteredPhoto(projectService.getAll(), "доски");
                 case ("/stairs") -> sendFilteredPhoto(projectService.getAll(), "лестницы");
 
@@ -116,15 +118,15 @@ public class Bot extends TelegramLongPollingBot {
                 case ("/phones") -> sendFilteredPhoto(projectService.getAll(), "полки");
                 case ("/other") -> sendFilteredPhoto(projectService.getAll(), "другое");
                 case ("/season") ->
-                        sendFilteredPhoto(projectService.getAll(), categoryService.getCategoryById(1).getName());
+                        sendFilteredPhoto(projectService.getAll(), supService.getSupportById(1).getValue());
                 case ("/individual") -> {
                     isIndividual = true;
-                    sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
+                    sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(supService.getSupportById(1)));
                     sendMessage("Выберите категорию:", sendMessage);
                 }
                 case ("/order") -> {
                     Long chat = update.getCallbackQuery().getMessage().getChatId();
-                    sendMessage.setChatId(460498710L);
+                    sendMessage.setChatId(ADMIN_ID);
                     sendMessage.setReplyMarkup(null);
                     sendMessage("@" + update.getCallbackQuery().getFrom().getUserName() + " хочет что-то заказать", sendMessage);
                     sendMessage.setChatId(chat);
@@ -137,11 +139,6 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void clearWebhook() {
-    }
-
-    @Override
-    public String getBotToken() {
-        return this.botToken;
     }
 
     @Override
@@ -179,8 +176,7 @@ public class Bot extends TelegramLongPollingBot {
                 return "Ошибка в описании";
             }
             String fileName = UUID.randomUUID() + ".jpg";
-            String savePath = "/home/data/" + fileName;
-            //String savePath = "E:\\data\\" + fileName;
+            String savePath = PART_OF_PATH + fileName;
             project.setName(newProject[0]);
             project.setDescription(newProject[1]);
             project.setPrice(newProject[2]);
@@ -199,10 +195,9 @@ public class Bot extends TelegramLongPollingBot {
         List<Project> resultList = Util.getFilteredProjects(projects, filter, isIndividual);
         for (Project p : resultList) {
             sendPhoto.setCaption(p.toString());
-            sendPhotoByPath("/home/data/" + p.getFileName(), sendPhoto);
-            //sendPhotoByPath("E:\\data\\" + p.getFileName(), sendPhoto);
+            sendPhotoByPath(PART_OF_PATH + p.getFileName(), sendPhoto);
         }
-        sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(categoryService.getCategoryById(1)));
+        sendMessage.setReplyMarkup(Keyboard.categoriesKeyboard(supService.getSupportById(1)));
         sendMessage("Выберите категорию:", sendMessage);
     }
 

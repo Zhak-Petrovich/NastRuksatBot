@@ -16,6 +16,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+import static bot.bot.Bot.PART_OF_PATH;
+
 @Service
 @Transactional(readOnly = true)
 public class ProjectService {
@@ -36,8 +38,7 @@ public class ProjectService {
             try {
                 byte[] bytes = file.getBytes();
                 String fileName = UUID.randomUUID() + ".jpg";
-                String savePath = "/home/data/" + fileName;
-                //String savePath = "E:\\data\\" + fileName;
+                String savePath = PART_OF_PATH + fileName;
                 BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(savePath));
                 outputStream.write(bytes);
                 outputStream.close();
@@ -65,7 +66,7 @@ public class ProjectService {
     }
     @Transactional
     public void deleteProject(Integer id) throws IOException {
-        Files.delete(Path.of("/home/data/" + repository.getReferenceById(id).getFileName()));
+        Files.delete(Path.of(PART_OF_PATH + repository.getReferenceById(id).getFileName()));
         repository.deleteById(id);
     }
 }

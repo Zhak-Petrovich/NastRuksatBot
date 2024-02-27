@@ -9,7 +9,7 @@
 <form th:method="POST" th:action="@{/editCategory}" th:object="${category}">
 
     <label for="name">Название</label>
-    <input type="text" th:field="*{name}" id="name" required placeholder="Например, рождество">
+    <input type="text" th:field="*{value}" id="name" required placeholder="Например, рождество">
     <input type="submit" value="Изменить категорию!">
 </form>
 </body>

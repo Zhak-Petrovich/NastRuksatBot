@@ -1,6 +1,6 @@
 package bot.keyboards;
 
-import bot.model.Category;
+import bot.model.Support;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Keyboard {
 
-    public static InlineKeyboardMarkup categoriesKeyboard(Category category) {
+    public static InlineKeyboardMarkup categoriesKeyboard(Support category) {
         InlineKeyboardMarkup keyboardMarkup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
@@ -23,7 +23,7 @@ public class Keyboard {
 
         List<InlineKeyboardButton> row3 = new ArrayList<>();
         row3.add(InlineKeyboardButton.builder().text("Другое").callbackData("/other").build());
-        row3.add(InlineKeyboardButton.builder().text(category.getName()).callbackData("/season").build());
+        row3.add(InlineKeyboardButton.builder().text(category.getValue()).callbackData("/season").build());
 
         List<InlineKeyboardButton> row4 = new ArrayList<>();
         row4.add(InlineKeyboardButton.builder().text("Назад").callbackData("/start").build());

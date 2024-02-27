@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+  <link rel="stylesheet" th:href="@{/style.css}">
+    <title>Edit about</title>
+</head>
+<body>
+<form th:method="POST" th:action="@{/editAbout}" th:object="${about}">
+  <label for="about">Текст</label>
+  <input type="text" th:field="*{value}" id="about" required placeholder="Например, Бла-бла-бла...">
+  <input type="submit" value="Изменить текст!">
+</form>
+</body>
+</html>
